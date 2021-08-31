@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+            <title>
+                Shine Dashoard
+            </title>
+            <style>
+              .loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+            </style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <h1 id='app'>{{text}}</h1>
+</div>
+<div class="row">
+  <h1 id='evt'>{{text}}</h1>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header card-header-icon card-header-rose">
+        <div class="card-icon">
+          <i class="material-icons">assignment</i>
+        </div>
+        <h4 class="card-title "> Regular Table with Colors</h4>
+      </div>
+      <div class="card-body table-full-width table-hover">
+        <button class="btn btn-primary" style="float: right;" onclick="Swalshow()">Enter Website Link for Scrapping</button>
+
+        <div class="table-responsive">
+          <table class="table" id="mytable">
+            <thead class="">
+              <!-- <th>
+                Number
+              </th> -->
+              <th>
+                Link
+              </th>
+              <th>
+                Title
+              </th>
+              <th>
+                Description
+              </th>
+              <th>
+                Word Count
+              </th>
+              <th>
+                Response Time
+              </th>
+            </thead>
+            <tbody id="thistable">
+          
+              <!-- <tr class="" >
+                <td>
+                  2
+                </td>
+                <td>
+                  Minerva Hooper
+                </td>
+                <td>
+                  Curaçao
+                </td>
+                <td>
+                  Sinaai-Waas
+                </td>
+                <td>
+                  $23,789
+                </td>
+                <td>
+                  $23,789
+                </td>
+              </tr> -->
+              
+              
+              
+              
+             
+            </tbody>
+          </table>
+          <!-- <div  class="row"> -->
+            
+
+            <!-- </div> -->
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="row">
+    <div class="col-md-5"></div>
+          <div  class="loader"></div>
+  </div> -->
+</div>
+
+
+<script>
+  
+  // var socket= new WebSocket('ws://localhost:8001/ws/some/');
+  
+  
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+<script>
+//   $(document).ready(function() {
+//     alert('y');
+// });
+
+  var csrftoken = '{{ csrf_token }}';
+ 
+  function Swalshow(){
+      swal.fire({
+                title: "Enter WebSite Link!!",
+                // html: "<form method='POST' id='myform' ><input type='hidden' name='csrfmiddlewaretoken' value='" + csrftoken + "'><input type='text' name='sites' class='form-control' placeholder='Enter website url' required> </form>",
+                html: "<input type='text' name='sites' id='sites' class='form-control' placeholder='Enter website url' required><br><div class='row''><div class='col-md-8'></div> <div class='col-md-2'><a onclick='EditStudentInfo()' type='button' id='atsss' style='width: 130px;background: #2761C8 0% 0% no-repeat padding-box;' class='btn border-primary text-white'>Add Link</a></div></div>",
+                
+                showCancelButton: false,
+            showConfirmButton: false,
+                })   
+    }
+  function EditStudentInfo(){
+    
+    // $("#sites").val();
+    
+    $('#thistable tr').remove();
+    var myStr = $('#sites').val();
+    var trimStr = $.trim(myStr);
+    // alert(trimStr);
+    var socket= new WebSocket('ws://localhost:8001/ws/many/');
+    socket.onopen = function (event) {
+      // alert('socket open');
+                    console.log("CONNECTED websocket");
+                    console.log("opened ", event);
+                };
+    
+
+    
+    
+
+    $.ajax({
+        type:'POST',
+        dataType:'JSON',
+        url :  "{% url 'users:gen_data' %}",
+        data : {
+        siting: trimStr,
+        csrfmiddlewaretoken: csrftoken,
+      },
+      success : function(response){
+        console.log(response)
+        swal.close()
+//         var l=$("#mytable tr").length;
+// if(l>)
+      },
+    });
+
+
+    socket.onmessage = function(event){
+      var data= JSON.parse(event.data);
+      console.log(data);
+      // document.querySelector('#app').innerText=data.message;
+      // alert(data.et)
+      // document.querySelector('#evt').innerText=data.et;
+      if(typeof data.et === 'undefined' && typeof data.title === 'undefined' && typeof data.description === 'undefined' && typeof data.wordcount === 'undefined' && typeof data.response_time === 'undefined' ) {
+        console.log('error');
+      }
+      else{
+
+        var b='<tr><td>'+data.et+'</td><td>'+data.title+'</td><td>'+data.description+'</td><td>'+data.wordcount+'</td><td>'+data.response_time+'</td></tr>';
+        
+        $('#thistable').append(b);
+      }
+  }
+    // socket.onclose = function (event) {
+    //       console.log("DISCONNECTED websocket");
+    //       console.log("closed ", event)
+    //   };
+    
+    
+  }
+
+
+  // $(document).ready(function() {
+    
+    // {% csrf_token %}
+                // .then(function() {
+                // });
+                // .catch(swal.noop)
+// });
+</script>
+
+{% endblock %}
